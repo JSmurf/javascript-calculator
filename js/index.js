@@ -1,91 +1,165 @@
-$(document).ready(function() {
-
-  // Variables to hold values to be calculated, and to validate
-  var calcArr = [""];
-  var calcStr;
-  var memArr = [""];
-  var funcCheck = ["/","*","-","+"];
-  // Functions to update the view on the screen, and 
-  function update() {
-    calcStr = calcArr.join("");
-    $(".textBox").html(calcStr);
-  }
-  function getTotal(){
-    calcStr = calcArr.join("");
-    $(".textBox").html(eval(calcStr));   
-  }
-  
-  
-  // We can actually refer to all buttons and give them a function, and then refer to this.id for specific operations
-$("button").on("click", function() {
-  if(this.id==="total"){
-    getTotal();
-  } 
-  else if(this.id==="clrAll"){
-    calcArr = [""];
-    update();
-  }
-  else if(this.id==="clrOne"){
-    calcArr.pop();
-    update();
-  }
-  // This adds an item to the memory variable, and memRec recovers it
-  else if(this.id==="memAdd"){
-    memArr = calcArr;
-  }
- else if(this.id==="memRec"){
-   calcArr = memArr;
-   update();
-  } else if (this.id==="neg"){
-    if(calcArr[0]!="-"){
-      calcArr.unshift("-");
-    } else {
-      calcArr.shift();
+// Object to hold the memory of the calculator
+var calcMem = {
+    currentValue: "0",
+    storedValue: "0",
+    lastEntered: "",
+    operator: "",
+    memory: "",
+    evaluated: false
+};
+// Function to calculate the total
+function evaluate(first, second, operator) {
+    // All three of these arguments are strings
+    // We can use one line to build our expression, evaluate it, and return it
+    return eval(first + operator + second);
+}
+// Function to update the display
+function updateDisplay(str) {
+    // Target the screen div
+    var screen = document.querySelectorAll('.textBox')[0];
+    // Set the screen's inner HTML to the input string
+    screen.innerHTML = str;
+}
+// Feed in the button's id, and the current calculator memory object
+function handleButtonPress(id, input) {
+    var newMem = input;
+    // Check to see if we have just evaluated a previous expression
+    switch (newMem.evaluated) {
+    case false:
+        switch (id) {
+        case "total":
+            // If the "=" button was pressed
+            // Check to see if there has been an operator entered
+            if (newMem.operator != "") {
+                // Evaluate the operation
+                if (newMem.lastEntered) {
+                    newMem.storedValue = newMem.lastEntered;
+                } else {
+                    newMem.lastEntered = newMem.currentValue;
+                }
+                var newTotal = evaluate(newMem.storedValue, newMem.currentValue, newMem.operator);
+                // Switch the evaluated to true so that we know we've done math
+                newMem.evaluated = true;
+                // Change the current value to the newly expressed value
+                newMem.currentValue = newTotal;
+            }
+            break;
+        case "clrAll":
+            // If the "A/C" button was pressed
+            // Reset all of the vars to empty strings
+            newMem.currentValue = "0";
+            newMem.storedValue = "0";
+            newMem.operator = "";
+            newMem.memory = "";
+            break;
+        case "clrOne":
+            // If the "C" button was pressed
+            // "Undo" the last operator + number just the currentValue variable
+            newMem.currentValue = newMem.storedValue;
+            newMem.storedValue = "0";
+            newMem.operator = "";
+            newMem.lastEntered = "";
+            // NOTE: Previously this would only delete the last key entered, but this behavior matches actual calculators
+            break;
+        case "memAdd":
+            // If the "M+" button was pressed
+            // Set the memory var to the current value
+            newMem.memory = newMem.currentValue;
+            break;
+        case "memRec":
+            // If the "M" button was pressed
+            // Set the current value to the memory var
+            newMem.currentValue = newMem.memory;
+            break;
+        case "neg":
+            // If the "+/-" button is pressed
+            if (newMem.currentValue[0] == "-") {
+                // If the current Value is negative, remove the "-"
+                newMem.currentValue = newMem.currentValue.slice(1);
+            } else {
+                // If it isn't negative, add a "-"
+                newMem.currentValue = "-" + newMem.currentValue;
+            }
+            break;
+        case "sqr":
+            // If the "square" button is pressed
+            // Calculate the current value squared, and set the current value to that
+            newMem.currentValue = Math.pow(newMem.currentValue, 2);
+            // We then want to set evaluated to true, so that we know that we just did an operation
+            newMem.evaluated = true;
+            break;
+        case "sqrt":
+            // If the "square root" button is pressed
+            // Calculate the current value squared, and set the current value to that
+            newMem.currentValue = Math.sqrt(newMem.currentValue);
+            // We then want to set evaluated to true, so that we know that we just did an operation
+            newMem.evaluated = true;
+            break;
+        case ".":
+            // If the "." button is pressed
+            var periodCheck = new RegExp("[.]");
+            if (!periodCheck.test(newMem.currentValue)) {
+                newMem.currentValue+= ".";
+            }
+            break;
+        case "/":
+        case "+":
+        case "*":
+        case "-":
+            newMem.operator = id;
+            newMem.storedValue = newMem.currentValue;
+            newMem.currentValue = "0";
+            break;
+        default:
+            // All that should be left is the numbers
+            if (newMem.currentValue == "0") {
+                newMem.currentValue = id;
+            } else if (newMem.currentValue == "-0") {
+                newMem.currentValue = "-" + id;
+            } else {
+            newMem.currentValue += id;
+            }
+            break;
+        }
+        break;
+    case true:
+        // If we have already done math
+        if (id == "total") {
+            // If "=" button is pressed again, re-run last operation.
+            newMem.evaluated = false;
+            newMem = handleButtonPress(id, newMem);
+        } else if (!isNaN(id)) {
+            newMem.lastEntered = "";
+            newMem.currentValue = "0";
+            newMem.evaluated = false;
+            newMem.operator = "";
+            newMem = handleButtonPress(id, newMem);
+        } else {
+            newMem.lastEntered = "";
+            newMem.storedValue = newMem.currentValue;
+            newMem.evaluated = false;
+            newMem.operator = "";
+            newMem = handleButtonPress(id, newMem);
+        }
+        break;
     }
-    update();
-  }
-  // Here, we are checking to see if we have duplicate operations in a row, then we will check for multiple decimal points
-    else if(funcCheck.includes(this.id)){ 
-      if(calcArr.length < 1) {
-         console.log("Error: Please enter a value first");
+    // Return the new memory object that we've created an updated
+    return newMem;
+}
+function loadCalc() {
+    // Target all buttons on the page
+    var buttons = document.querySelectorAll('button');
+    // Iterate over buttons to add event listener
+    for (var i = 0; i < buttons.length; i ++) {
+        buttons[i].addEventListener('click', function(event) {
+            // Prevent browser default
+            event.preventDefault();
+            // Handle the button press, and then update the screen
+            calcMem = handleButtonPress(this.id, calcMem);
+            updateDisplay(calcMem.currentValue);
+        });
     }
-      else if (funcCheck.includes(calcArr[calcArr.length-1]) ){
-        console.log("Error: Multiple consecutive opperations");
-      } else {
-        calcArr.push(this.id);
-      }
-      update();
-    }
-  else if(this.id==="."){
-          if (calcArr.includes(".")){
-            console.log("Error: Multiple decimals detected");
-          } 
-    else {
-      calcArr.push(".");
-    }
-    update();
-  } 
-  // With these two functions, we're actually replacing our entire calcArr, otherwise, if we continue to make calculations it uses the previous calcArr. I'm sure there's a better way to do this, and I will change this when I figure that out
-  else if(this.id==="sqr"){
-     calcArr = [Math.pow(eval(calcArr.join("")),2)];   
-     update();
-  }
-  else if(this.id==="sqrt"){
-     calcArr = [Math.sqrt(eval(calcArr.join("")))];   
-     update();
-  }
-    //Every other case, used for numbers
-  else {
-    calcArr.push(this.id);
-    update();
-          
-  }
-  
-});
-
-  
-  // End of program
-});
-// It's important to note at this point that the JQuery eval() function DOES follow order of operations (8 * 8 + 4 / 2 = 66). If I want to truly duplicate the TI-108, I will have to find a way to force this to not follow those rules.
-
-//I have decided to waiver from the original "simulate TI-108" plan, so this is also largely irrelevant.
+    // Set the display so that it's not empty when the calculator loads
+    // From a testing standpoint, this also lets us know that the page loaded properly
+    updateDisplay(calcMem.currentValue);
+}
