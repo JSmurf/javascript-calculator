@@ -2,7 +2,7 @@
 var calcMem = {
     currentValue: "0",
     storedValue: "0",
-    lastEntered: "",
+    total: "",
     operator: "",
     memory: "",
     evaluated: false
@@ -38,6 +38,10 @@ function handleButtonPress(id, input) {
                     newMem.lastEntered = newMem.currentValue;
                 }
                 var newTotal = evaluate(newMem.storedValue, newMem.currentValue, newMem.operator);
+                if (newTotal.toString().length > 11) {
+                    newTotal = newTotal.toExponential(4);
+                }
+                newMem.storedValue = newMem.currentValue;
                 // Switch the evaluated to true so that we know we've done math
                 newMem.evaluated = true;
                 // Change the current value to the newly expressed value
@@ -112,12 +116,16 @@ function handleButtonPress(id, input) {
             break;
         default:
             // All that should be left is the numbers
-            if (newMem.currentValue == "0") {
-                newMem.currentValue = id;
-            } else if (newMem.currentValue == "-0") {
-                newMem.currentValue = "-" + id;
+            if (newMem.currentValue.toString().length > 9) {
+                console.log("Digit limit met");
             } else {
-            newMem.currentValue += id;
+                if (newMem.currentValue == "0") {
+                    newMem.currentValue = id;
+                } else if (newMem.currentValue == "-0") {
+                    newMem.currentValue = "-" + id;
+                } else {
+                newMem.currentValue += id;
+                }
             }
             break;
         }
