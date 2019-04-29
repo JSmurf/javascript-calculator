@@ -19,5 +19,5 @@ The following is a list of functional/stytlistic changes I want to make.
 - [x] Change functionality to more closely emulate the TI-108 calculator
 - [x] Improve styling to more closely emulate the TI-108 calculator
 - [ ] Add unit testing
-- [ ] Add keyboard functionality
+- [x] Add keyboard functionality
 - [ ] (Maybe) add easter egg

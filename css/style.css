@@ -1,8 +1,10 @@
 @import url('https://fonts.googleapis.com/css?family=Days+One');
+
 @font-face {
     font-family: "DS-Digital";
     src: url("../dsdigital.ttf");
 }
+
 :root {
     --main-blue: #075597;
     --text-box-gray: #B5B5B3;
@@ -77,6 +79,7 @@ body {
     grid-row-gap: 0.2em;
     grid-column-gap: 0.2em;
 }
+
 .button {
     height: 3.5em;
     width: 90%;
@@ -96,6 +99,7 @@ body {
 .last-col {
     margin-left: 5px;
 }
+
 .func {
     background-color: var(--func-button-color);
     color: var(--button-color);

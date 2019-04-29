@@ -53,6 +53,7 @@ function handleButtonPress(id, input) {
             // Reset all of the vars to empty strings
             newMem.currentValue = "0";
             newMem.storedValue = "0";
+            newMem.total = "";
             newMem.operator = "";
             newMem.memory = "";
             break;
@@ -129,6 +130,7 @@ function handleButtonPress(id, input) {
             }
             break;
         }
+        updateDisplay(newMem.currentValue);
         break;
     case true:
         // If we have already done math
@@ -154,6 +156,7 @@ function handleButtonPress(id, input) {
     // Return the new memory object that we've created an updated
     return newMem;
 }
+
 function loadCalc() {
     // Target all buttons on the page
     var buttons = document.querySelectorAll('button');
@@ -164,10 +167,71 @@ function loadCalc() {
             event.preventDefault();
             // Handle the button press, and then update the screen
             calcMem = handleButtonPress(this.id, calcMem);
-            updateDisplay(calcMem.currentValue);
         });
     }
     // Set the display so that it's not empty when the calculator loads
     // From a testing standpoint, this also lets us know that the page loaded properly
     updateDisplay(calcMem.currentValue);
+}
+
+document.onkeydown = function(e) {
+    var key = String.fromCharCode(e.keyCode);
+    var code = e.keyCode;
+
+    switch (key) {
+    case "1":
+    case "2":
+    case "3":
+    case "4":
+    case "5":
+    case "6":
+    case "7":
+    case "9":
+    case "0":
+        handleButtonPress(key, calcMem);
+        break;
+    case "8":
+        if (event.shiftKey) {
+            handleButtonPress("*", calcMem);
+        } else {
+            handleButtonPress(key, calcMem);
+        }
+        break;
+    case "X":
+    case "*":
+        handleButtonPress("*", calcMem);
+        break;
+    }
+    switch (code) {
+    case 13:
+        handleButtonPress("total", calcMem);
+        break;
+    case 187:
+        if (event.shiftKey) {
+            handleButtonPress("+", calcMem);
+        } else {
+            handleButtonPress("total", calcMem);
+        }
+        break;
+    case 189:
+        handleButtonPress("-", calcMem);
+        break;
+    case 106:
+        handleButtonPress("*", calcMem);
+        break;
+    case 107:
+        handleButtonPress("+", calcMem);
+        break;
+    case 108:
+    case 110:
+        handleButtonPress(".", calcMem);
+        break;
+    case 109:
+        handleButtonPress("-", calcMem);
+        break;
+    case 111:
+        handleButtonPress("/", calcMem);
+        break;
+    }
+    console.log(code);
 }
