@@ -173,11 +173,13 @@ function loadCalc() {
     // From a testing standpoint, this also lets us know that the page loaded properly
     updateDisplay(calcMem.currentValue);
 }
-
+// Function to add ability to use keyboard
 document.onkeydown = function(e) {
+    // Variable that represents the "name" of the key (if a letter or number)
     var key = String.fromCharCode(e.keyCode);
+    // Variable that represents the code for the key
     var code = e.keyCode;
-
+    // We can use switch/cases as is they're a ton of if statements
     switch (key) {
     case "1":
     case "2":
@@ -188,50 +190,66 @@ document.onkeydown = function(e) {
     case "7":
     case "9":
     case "0":
+        // If the key is a number, just enter that number
         handleButtonPress(key, calcMem);
         break;
     case "8":
+        // If the number is 8, check if shift is held
         if (event.shiftKey) {
+            // If so, then the user wants to multiply
             handleButtonPress("*", calcMem);
         } else {
+            // Otherwise, enter an "8"
             handleButtonPress(key, calcMem);
         }
         break;
     case "X":
-    case "*":
+        // We can also count the "X" key as a multiplication sign
         handleButtonPress("*", calcMem);
         break;
     }
+    // Same thing here, but with the keycode, since these aren't as easy to work with
     switch (code) {
     case 13:
+        // If the Enter key is pressed, process as an equals
         handleButtonPress("total", calcMem);
         break;
     case 187:
+        // If the "=" key is pressed, check if the shift key is held
         if (event.shiftKey) {
+            // If so, process as a "+"
             handleButtonPress("+", calcMem);
         } else {
+            // If not, process as an equals
             handleButtonPress("total", calcMem);
         }
         break;
     case 189:
+        // 189 is the minus key, we don't need to worry about shift
         handleButtonPress("-", calcMem);
         break;
     case 106:
+        // 106 is the multiply key on the numberpad
         handleButtonPress("*", calcMem);
         break;
     case 107:
+        // 107 is the add key on the numberpad
         handleButtonPress("+", calcMem);
         break;
     case 108:
     case 110:
+        // 108 and 110 are both periods
         handleButtonPress(".", calcMem);
         break;
     case 109:
+        // 109 is the subtract key on the numberpad
         handleButtonPress("-", calcMem);
         break;
     case 111:
+        // 111 is the divide key on the numberpad
         handleButtonPress("/", calcMem);
         break;
+        // NOTE: This doesn't allow for exponents and memory functions with the keyboard
+        // But I think basic functionality is fine for now
     }
-    console.log(code);
-}
+};
