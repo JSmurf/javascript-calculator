@@ -16,8 +16,8 @@ The following is a list of functional/stytlistic changes I want to make.
 
 - [x] Rewrite Javascript to not use jQuery
 - [x] Replace if/then statements with switch statements
-- [ ] Change functionality to more closely emulate the TI-108 calculator
-- [ ] Improve styling to more closely emulate the TI-108 calculator
+- [x] Change functionality to more closely emulate the TI-108 calculator
+- [x] Improve styling to more closely emulate the TI-108 calculator
 - [ ] Add unit testing
 - [ ] Add keyboard functionality
 - [ ] (Maybe) add easter egg
