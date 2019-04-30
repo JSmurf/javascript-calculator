@@ -2,6 +2,7 @@
 var calcMem = {
     currentValue: "0",
     storedValue: "0",
+    lastEntered: "",
     total: "",
     operator: "",
     memory: "",
@@ -20,6 +21,13 @@ function updateDisplay(str) {
     // Set the screen's inner HTML to the input string
     screen.innerHTML = str;
 }
+// Function to truncate number if it has too many digits
+function getTotalToDisplay(num) {
+    if (num.toString().length > 11) {
+        num = num.toExponential(4);
+    }
+    return num;
+}
 // Feed in the button's id, and the current calculator memory object
 function handleButtonPress(id, input) {
     var newMem = input;
@@ -31,31 +39,32 @@ function handleButtonPress(id, input) {
             // If the "=" button was pressed
             // Check to see if there has been an operator entered
             if (newMem.operator != "") {
-                // Evaluate the operation
-                if (newMem.lastEntered) {
-                    newMem.storedValue = newMem.lastEntered;
-                } else {
+                if (newMem.lastEntered == "") {
                     newMem.lastEntered = newMem.currentValue;
+                } else {
+                    newMem.currentValue = newMem.lastEntered;
                 }
+                // Evaluate the operation
                 var newTotal = evaluate(newMem.storedValue, newMem.currentValue, newMem.operator);
-                if (newTotal.toString().length > 11) {
-                    newTotal = newTotal.toExponential(4);
-                }
-                newMem.storedValue = newMem.currentValue;
+                newTotal = getTotalToDisplay(newTotal);
+                newMem.storedValue = newTotal;
                 // Switch the evaluated to true so that we know we've done math
                 newMem.evaluated = true;
                 // Change the current value to the newly expressed value
-                newMem.currentValue = newTotal;
+                newMem.total = newTotal;
+            } else {
+                console.log("No operator entered");
             }
             break;
         case "clrAll":
             // If the "A/C" button was pressed
-            // Reset all of the vars to empty strings
+            // Reset all of the vars to original values
             newMem.currentValue = "0";
             newMem.storedValue = "0";
             newMem.total = "";
             newMem.operator = "";
             newMem.memory = "";
+            newMem.total = "";
             break;
         case "clrOne":
             // If the "C" button was pressed
@@ -64,6 +73,7 @@ function handleButtonPress(id, input) {
             newMem.storedValue = "0";
             newMem.operator = "";
             newMem.lastEntered = "";
+            newMem.total = "";
             // NOTE: Previously this would only delete the last key entered, but this behavior matches actual calculators
             break;
         case "memAdd":
@@ -89,74 +99,144 @@ function handleButtonPress(id, input) {
         case "sqr":
             // If the "square" button is pressed
             // Calculate the current value squared, and set the current value to that
-            newMem.currentValue = Math.pow(newMem.currentValue, 2);
+            var sqrTotal = Math.pow(newMem.currentValue, 2);
+            sqrTotal = getTotalToDisplay(sqrTotal);
+            newMem.currentValue = sqrTotal;
+            newMem.total = sqrTotal;
             // We then want to set evaluated to true, so that we know that we just did an operation
             newMem.evaluated = true;
             break;
         case "sqrt":
             // If the "square root" button is pressed
             // Calculate the current value squared, and set the current value to that
-            newMem.currentValue = Math.sqrt(newMem.currentValue);
+            var sqrtTotal = Math.sqrt(newMem.currentValue);
+            sqrtTotal = getTotalToDisplay(sqrtTotal);
+            newMem.currentValue = sqrtTotal;
+            newMem.total = sqrtTotal;
             // We then want to set evaluated to true, so that we know that we just did an operation
             newMem.evaluated = true;
             break;
         case ".":
             // If the "." button is pressed
+            // Check to see if the current value has a period in it
             var periodCheck = new RegExp("[.]");
             if (!periodCheck.test(newMem.currentValue)) {
+                // If it doesn't add a period to the current value
                 newMem.currentValue+= ".";
+            } else {
+                console.log("Current Value already contains a decimal point");
             }
             break;
         case "/":
         case "+":
         case "*":
         case "-":
+            // If an operator is pressed
+            // Set the operator value to the id
             newMem.operator = id;
+            // Move the current value to the stored value, and reset the current value
             newMem.storedValue = newMem.currentValue;
-            newMem.currentValue = "0";
+            newMem.currentValue = "";
             break;
         default:
             // All that should be left is the numbers
             if (newMem.currentValue.toString().length > 9) {
+                // If there's already 10 digits, don't allow any more, this keeps the numbers able to fit in the box
                 console.log("Digit limit met");
             } else {
+                // If the current value is 0, replace it, so that there's no 0-padding at the start
                 if (newMem.currentValue == "0") {
                     newMem.currentValue = id;
                 } else if (newMem.currentValue == "-0") {
                     newMem.currentValue = "-" + id;
                 } else {
-                newMem.currentValue += id;
+                    // If the value isn't 0, just add the new digit onto the end
+                    newMem.currentValue += id;
                 }
             }
+            // End the !evaluated block
             break;
         }
-        updateDisplay(newMem.currentValue);
+        if (newMem.total === "") {
+            // If the enter key was not just pressed, the total would be ""
+            // Therefore, just display the current value
+            updateDisplay(newMem.currentValue);
+        } else {
+            // If the total is any other value, it means that it was just evaluated, so use the total
+            updateDisplay(newMem.total);
+        }
         break;
     case true:
         // If we have already done math
-        if (id == "total") {
+        switch (id) {
+        case "total":
             // If "=" button is pressed again, re-run last operation.
+            // Set the evaluated to false so that the above code runs
             newMem.evaluated = false;
+            // Set the current value to the last entered value
+            newMem.currentValue = newMem.lastEntered;
             newMem = handleButtonPress(id, newMem);
-        } else if (!isNaN(id)) {
+            break;
+        case "*":
+        case "/":
+        case "+":
+        case "-":
+            // If an operator is entered
+            // Set the current value to the total
+            newMem.currentValue = newMem.total;
+            // Reset all other values except stored value
             newMem.lastEntered = "";
+            newMem.evaluated = false;
+            newMem.operator = "";
+            newMem.total = "";
+            // Run the above code for operator entered
+            newMem = handleButtonPress(id, newMem);
+            break;
+        case "0":
+        case "1":
+        case "2":
+        case "3":
+        case "4":
+        case "5":
+        case "6":
+        case "7":
+        case "8":
+        case "9":
+            // If a number is entered
+            // Reset all values except stored value
             newMem.currentValue = "0";
-            newMem.evaluated = false;
-            newMem.operator = "";
-            newMem = handleButtonPress(id, newMem);
-        } else {
             newMem.lastEntered = "";
-            newMem.storedValue = newMem.currentValue;
             newMem.evaluated = false;
             newMem.operator = "";
+            newMem.total = "";
+            // Run the above code for number entered
             newMem = handleButtonPress(id, newMem);
+            break;
+        case "clrAll":
+        case "clrOne":
+            // If a clear button is pressed, reset evaluated and then re-run
+            newMem.evaluated = false;
+            newMem = handleButtonPress(id, newMem);
+            break;
+        case "memAdd":
+            // If the memory add button is pressed, add the total to the memory
+            newMem.memory = newMem.total;
+            newMem.evaluated = false;
+            break;
+        case "sqr":
+        case "sqrt":
+            // If squaring or rooting, make sure the currentValue is the total
+            newMem.currentValue = newMem.total;
+            newMem.evaluated = false;
+            newMem = handleButtonPress(id, newMem);
+            break;
         }
         break;
     }
     // Return the new memory object that we've created an updated
     return newMem;
 }
-
+// Function to set all event listeners
 function loadCalc() {
     // Target all buttons on the page
     var buttons = document.querySelectorAll('button');

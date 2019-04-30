@@ -21,6 +21,13 @@ function updateDisplay(str) {
     // Set the screen's inner HTML to the input string
     screen.innerHTML = str;
 }
+// Function to truncate number if it has too many digits
+function getTotalToDisplay(num) {
+    if (num.toString().length > 11) {
+        num = num.toExponential(4);
+    }
+    return num;
+}
 // Feed in the button's id, and the current calculator memory object
 function handleButtonPress(id, input) {
     var newMem = input;
@@ -39,9 +46,7 @@ function handleButtonPress(id, input) {
                 }
                 // Evaluate the operation
                 var newTotal = evaluate(newMem.storedValue, newMem.currentValue, newMem.operator);
-                if (newTotal.toString().length > 11) {
-                    newTotal = newTotal.toExponential(4);
-                }
+                newTotal = getTotalToDisplay(newTotal);
                 newMem.storedValue = newTotal;
                 // Switch the evaluated to true so that we know we've done math
                 newMem.evaluated = true;
@@ -53,12 +58,13 @@ function handleButtonPress(id, input) {
             break;
         case "clrAll":
             // If the "A/C" button was pressed
-            // Reset all of the vars to empty strings
+            // Reset all of the vars to original values
             newMem.currentValue = "0";
             newMem.storedValue = "0";
             newMem.total = "";
             newMem.operator = "";
             newMem.memory = "";
+            newMem.total = "";
             break;
         case "clrOne":
             // If the "C" button was pressed
@@ -67,6 +73,7 @@ function handleButtonPress(id, input) {
             newMem.storedValue = "0";
             newMem.operator = "";
             newMem.lastEntered = "";
+            newMem.total = "";
             // NOTE: Previously this would only delete the last key entered, but this behavior matches actual calculators
             break;
         case "memAdd":
@@ -92,14 +99,20 @@ function handleButtonPress(id, input) {
         case "sqr":
             // If the "square" button is pressed
             // Calculate the current value squared, and set the current value to that
-            newMem.currentValue = Math.pow(newMem.currentValue, 2);
+            var sqrTotal = Math.pow(newMem.currentValue, 2);
+            sqrTotal = getTotalToDisplay(sqrTotal);
+            newMem.currentValue = sqrTotal;
+            newMem.total = sqrTotal;
             // We then want to set evaluated to true, so that we know that we just did an operation
             newMem.evaluated = true;
             break;
         case "sqrt":
             // If the "square root" button is pressed
             // Calculate the current value squared, and set the current value to that
-            newMem.currentValue = Math.sqrt(newMem.currentValue);
+            var sqrtTotal = Math.sqrt(newMem.currentValue);
+            sqrtTotal = getTotalToDisplay(sqrtTotal);
+            newMem.currentValue = sqrtTotal;
+            newMem.total = sqrtTotal;
             // We then want to set evaluated to true, so that we know that we just did an operation
             newMem.evaluated = true;
             break;
@@ -197,6 +210,24 @@ function handleButtonPress(id, input) {
             newMem.operator = "";
             newMem.total = "";
             // Run the above code for number entered
+            newMem = handleButtonPress(id, newMem);
+            break;
+        case "clrAll":
+        case "clrOne":
+            // If a clear button is pressed, reset evaluated and then re-run
+            newMem.evaluated = false;
+            newMem = handleButtonPress(id, newMem);
+            break;
+        case "memAdd":
+            // If the memory add button is pressed, add the total to the memory
+            newMem.memory = newMem.total;
+            newMem.evaluated = false;
+            break;
+        case "sqr":
+        case "sqrt":
+            // If squaring or rooting, make sure the currentValue is the total
+            newMem.currentValue = newMem.total;
+            newMem.evaluated = false;
             newMem = handleButtonPress(id, newMem);
             break;
         }
